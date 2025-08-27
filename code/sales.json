@@ -1,0 +1,9 @@
+[
+  { "produto": "Notebook", "quantidade": 10, "valor": 35000 },
+  { "produto": "Celular", "quantidade": 20, "valor": 28000 },
+  { "produto": "Tablet", "quantidade": 5, "valor": 7500 },
+  { "produto": "Monitor", "quantidade": 8, "valor": 9600 },
+  { "produto": "Headset", "quantidade": 15, "valor": 4500 },
+  { "produto": "Teclado", "quantidade": 12, "valor": 3600 },
+  { "produto": "Mouse", "quantidade": 18, "valor": 2700 }
+]

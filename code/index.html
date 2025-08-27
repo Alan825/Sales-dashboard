@@ -1,43 +1,48 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard de Vendas</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Dashboard PRO de Vendas</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <h1>📊 Dashboard de Vendas</h1>
-  </header>
+  <div class="top-bar">
+    <h1>📊 Dashboard PRO de Vendas</h1>
+    <button id="toggle-dark">🌙 Dark Mode</button>
+  </div>
 
-  <main>
-    <section class="cards">
-      <div class="card">💰 Total: R$ <span id="total">0</span></div>
-      <div class="card">📦 Produtos: <span id="produtos">0</span></div>
-      <div class="card">👥 Clientes: <span id="clientes">0</span></div>
-    </section>
+  <div class="cards">
+    <div class="card">Total vendas: <strong id="total-vendas">R$ 0,00</strong></div>
+    <div class="card">Total produtos: <strong id="total-produtos">0</strong></div>
+    <div class="card">Média de vendas: <strong id="media-vendas">R$ 0,00</strong></div>
+    <div class="card">Produto mais vendido: <strong id="mais-vendido">-</strong></div>
+  </div>
 
-    <section class="graficos">
-      <canvas id="barChart"></canvas>
-      <canvas id="pieChart"></canvas>
-    </section>
+  <div class="filtro">
+    <input type="text" id="filtro-produto" placeholder="Filtrar produto...">
+    <input type="number" id="filtro-min" placeholder="Valor mínimo">
+    <input type="number" id="filtro-max" placeholder="Valor máximo">
+  </div>
 
-    <section>
-      <h2>Vendas Recentes</h2>
+  <div class="conteudo">
+    <div class="grafico">
+      <canvas id="grafico-vendas"></canvas>
+    </div>
+    <div class="tabela">
       <table>
         <thead>
           <tr>
-            <th>Data</th>
             <th>Produto</th>
+            <th>Quantidade</th>
             <th>Valor</th>
           </tr>
         </thead>
         <tbody id="tabela-vendas"></tbody>
       </table>
-    </section>
-  </main>
+    </div>
+  </div>
 
   <script src="script.js"></script>
 </body>

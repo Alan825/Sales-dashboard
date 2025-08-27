@@ -1,45 +1,93 @@
-const vendas = [
-  { data: "2025-08-01", produto: "Banana", valor: 120 },
-  { data: "2025-08-02", produto: "Maçã", valor: 90 },
-  { data: "2025-08-03", produto: "Laranja", valor: 150 },
-  { data: "2025-08-04", produto: "Tomate", valor: 200 }
-];
+document.addEventListener('DOMContentLoaded', () => {
+  carregarDados();
 
-const tabela = document.getElementById("tabela-vendas");
-vendas.forEach(v => {
-  let row = `<tr>
-              <td>${v.data}</td>
-              <td>${v.produto}</td>
-              <td>R$ ${v.valor}</td>
-            </tr>`;
-  tabela.innerHTML += row;
+  // Dark Mode
+  document.getElementById('toggle-dark').addEventListener('click', () => {
+    document.body.classList.toggle('dark');
+  });
+
+  // Filtro de produtos
+  document.getElementById('filtro-produto').addEventListener('input', aplicarFiltros);
+  document.getElementById('filtro-min').addEventListener('input', aplicarFiltros);
+  document.getElementById('filtro-max').addEventListener('input', aplicarFiltros);
 });
 
-let total = vendas.reduce((acc, v) => acc + v.valor, 0);
-document.getElementById("total").textContent = total;
+let chartInstance = null;
+let vendasGlobais = [];
+const dinheiro = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 
-document.getElementById("produtos").textContent = vendas.length;
-document.getElementById("clientes").textContent = 12;
+async function carregarDados() {
+  try {
+    const res = await fetch('sales.json');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    vendasGlobais = await res.json();
 
-new Chart(document.getElementById("barChart"), {
-  type: "bar",
-  data: {
-    labels: vendas.map(v => v.produto),
-    datasets: [{
-      label: "Vendas (R$)",
-      data: vendas.map(v => v.valor),
-      backgroundColor: "rgba(75, 192, 192, 0.6)"
-    }]
+    atualizarDashboard(vendasGlobais);
+
+  } catch (err) {
+    console.error('Erro ao carregar JSON:', err);
+    alert('Erro ao carregar dados. Veja o console (F12).');
   }
-});
+}
 
-new Chart(document.getElementById("pieChart"), {
-  type: "pie",
-  data: {
-    labels: vendas.map(v => v.produto),
-    datasets: [{
-      data: vendas.map(v => v.valor),
-      backgroundColor: ["#ff6384", "#36a2eb", "#ffcd56", "#4bc0c0"]
-    }]
-  }
-});
+function atualizarDashboard(vendas) {
+  preencherTabela(vendas);
+  atualizarCards(vendas);
+  criarGrafico(vendas);
+}
+
+function preencherTabela(vendas) {
+  const tbody = document.getElementById('tabela-vendas');
+  tbody.innerHTML = '';
+  vendas.forEach(v => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${v.produto}</td>
+      <td>${v.quantidade}</td>
+      <td>${dinheiro.format(Number(v.valor))}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function atualizarCards(vendas) {
+  const totalVendas = vendas.reduce((s, v) => s + Number(v.valor), 0);
+  const totalProdutos = vendas.reduce((s, v) => s + Number(v.quantidade), 0);
+  const mediaVendas = totalVendas / vendas.length;
+  const maisVendido = vendas.reduce((prev, curr) => (curr.quantidade > prev.quantidade ? curr : prev)).produto;
+
+  document.getElementById('total-vendas').textContent = dinheiro.format(totalVendas);
+  document.getElementById('total-produtos').textContent = totalProdutos;
+  document.getElementById('media-vendas').textContent = dinheiro.format(mediaVendas);
+  document.getElementById('mais-vendido').textContent = maisVendido;
+}
+
+function criarGrafico(vendas) {
+  const ctx = document.getElementById('grafico-vendas').getContext('2d');
+  const labels = vendas.map(v => v.produto);
+  const data = vendas.map(v => Number(v.valor));
+  const colors = vendas.map(() => '#' + Math.floor(Math.random()*16777215).toString(16));
+
+  if (chartInstance) chartInstance.destroy();
+
+  chartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets: [{ label: 'Vendas (R$)', data, backgroundColor: colors }] },
+    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+  });
+}
+
+// Filtros avançados
+function aplicarFiltros() {
+  const filtroProduto = document.getElementById('filtro-produto').value.toLowerCase();
+  const minValor = parseFloat(document.getElementById('filtro-min').value) || -Infinity;
+  const maxValor = parseFloat(document.getElementById('filtro-max').value) || Infinity;
+
+  const vendasFiltradas = vendasGlobais.filter(v => {
+    const nome = v.produto.toLowerCase();
+    const valor = Number(v.valor);
+    return nome.includes(filtroProduto) && valor >= minValor && valor <= maxValor;
+  });
+
+  atualizarDashboard(vendasFiltradas);
+}
